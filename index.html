@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Q&D Operationd Dashboard</title>
+<title>LSA Sample Tracking Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #0f1117; --bg2: #181c27; --bg3: #1e2333;
   --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.13);
-  --text: #e8eaf0; --text2: #8b90a0; --text3: #4e5568;
+  --text: #e8eaf0; --text2: #a0a6b8; --text3: #7a8299;
   --blue: #4f8ef7; --blue-bg: rgba(79,142,247,0.1); --blue-border: rgba(79,142,247,0.28);
   --green: #34c77b; --green-bg: rgba(52,199,123,0.1); --green-border: rgba(52,199,123,0.28);
   --amber: #f5a623; --amber-bg: rgba(245,166,35,0.1); --amber-border: rgba(245,166,35,0.28);
@@ -41,7 +41,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .error-box { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: var(--radius); padding: 14px 18px; color: #fca5a5; font-size: 13px; margin-bottom: 1.5rem; line-height: 1.6; }
 .filter-panel { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
 .fg { display: flex; flex-direction: column; gap: 5px; }
-.fg label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); }
+.fg label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text2); }
 .fg select, .fg input[type=date] { font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 7px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--bg3); color: var(--text); min-width: 150px; outline: none; cursor: pointer; appearance: auto; }
 .fg select:focus, .fg input:focus { border-color: var(--blue-border); }
 .pills-row { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -56,14 +56,14 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .chip.green { background: var(--green-bg); color: var(--green); border-color: var(--green-border); }
 .chip .x { opacity: .45; font-size: 15px; line-height: 1; margin-left: 2px; }
 .chip:hover .x { opacity: 1; }
-.section-header { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; margin-top: 6px; }
+.section-header { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text2); margin-bottom: 8px; margin-top: 6px; }
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 10px; }
 .kpi { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
-.kpi-label { font-size: 11px; color: var(--text3); margin-bottom: 8px; font-weight: 500; }
+.kpi-label { font-size: 11px; color: var(--text2); margin-bottom: 8px; font-weight: 500; }
 .kpi-value { font-size: 26px; font-weight: 600; color: var(--text); letter-spacing: -0.03em; line-height: 1; }
 .kpi-value.green { color: var(--green); }
 .kpi-value.amber { color: var(--amber); }
-.kpi-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+.kpi-sub { font-size: 11px; color: var(--text2); margin-top: 4px; }
 .lp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 10px; margin-bottom: 1.25rem; }
 .lp-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; cursor: pointer; transition: all .15s; }
 .lp-card:hover { border-color: var(--border2); transform: translateY(-1px); }
@@ -77,18 +77,18 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
 .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
 .card.full { grid-column: 1 / -1; }
-.card-title { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text3); margin-bottom: 12px; }
-.card-subtitle { font-size: 11px; color: var(--text3); margin-top: -8px; margin-bottom: 14px; line-height: 1.5; }
+.card-title { font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text2); margin-bottom: 12px; }
+.card-subtitle { font-size: 11px; color: var(--text2); margin-top: -8px; margin-bottom: 14px; line-height: 1.5; }
 .proj-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
 .proj-item { background: var(--bg3); border-radius: var(--radius-sm); padding: 14px 16px; }
-.proj-label { font-size: 11px; color: var(--text3); margin-bottom: 6px; font-weight: 500; }
+.proj-label { font-size: 11px; color: var(--text2); margin-bottom: 6px; font-weight: 500; }
 .proj-value { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
 .proj-value.green { color: var(--green); }
 .proj-value.amber { color: var(--amber); }
 .proj-value.blue { color: var(--blue); }
 .table-wrap { overflow-x: auto; }
 table.dt { width: 100%; border-collapse: collapse; font-size: 13px; }
-table.dt th { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text3); text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+table.dt th { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text2); text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
 table.dt td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
 table.dt tr:last-child td { border-bottom: none; }
 table.dt tr.cr { cursor: pointer; transition: background .1s; }
@@ -106,6 +106,16 @@ table.dt tr.cr:hover { background: var(--bg3); }
 </style>
 </head>
 <body>
+
+<div id="pw-gate" style="position:fixed;inset:0;background:#0f1117;display:flex;align-items:center;justify-content:center;z-index:9999">
+  <div style="background:#181c27;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:2.5rem 2rem;width:100%;max-width:360px;text-align:center">
+    <div style="font-size:22px;font-weight:600;color:#e8eaf0;margin-bottom:6px;letter-spacing:-0.02em">LSA <span style="color:#4f8ef7">Tracker</span></div>
+    <div style="font-size:13px;color:#7a8299;margin-bottom:1.75rem">Enter your password to continue</div>
+    <input id="pw-input" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')checkPw()" style="width:100%;font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.13);background:#1e2333;color:#e8eaf0;outline:none;margin-bottom:10px;text-align:center;letter-spacing:0.05em">
+    <div id="pw-error" style="font-size:12px;color:#fca5a5;margin-bottom:10px;min-height:18px"></div>
+    <button onclick="checkPw()" style="width:100%;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;padding:10px;border-radius:8px;border:none;background:#4f8ef7;color:#fff;cursor:pointer">Enter dashboard</button>
+  </div>
+</div>
 
 <div class="topbar">
   <div class="topbar-left">
@@ -183,6 +193,7 @@ table.dt tr.cr:hover { background: var(--bg3); }
       <div class="kpi"><div class="kpi-label">Total est. revenue</div><div class="kpi-value green" id="r-total">—</div></div>
       <div class="kpi"><div class="kpi-label">Tox revenue</div><div class="kpi-value green" id="r-tox">—</div><div class="kpi-sub">$180 / sample</div></div>
       <div class="kpi"><div class="kpi-label">Molecular revenue</div><div class="kpi-value green" id="r-mol">—</div><div class="kpi-sub">$400 / sample</div></div>
+      <div class="kpi"><div class="kpi-label">Current month projected</div><div class="kpi-value green" id="r-month-proj">—</div><div class="kpi-sub" id="r-month-proj-sub">based on month-to-date</div></div>
       <div class="kpi"><div class="kpi-label">Avg / submission day</div><div class="kpi-value amber" id="r-per-day">—</div></div>
       <div class="kpi"><div class="kpi-label">Avg / practice</div><div class="kpi-value amber" id="r-per-prac">—</div></div>
       <div class="kpi"><div class="kpi-label">Avg / LSA</div><div class="kpi-value amber" id="r-per-lsa">—</div></div>
@@ -383,6 +394,32 @@ function kpis(f) {
   document.getElementById('r-per-day').textContent = days > 0 ? fmtRev(totRev/days) : '—';
   document.getElementById('r-per-prac').textContent = pracs > 0 ? fmtRev(totRev/pracs) : '—';
   document.getElementById('r-per-lsa').textContent = lsas > 0 ? fmtRev(totRev/lsas) : '—';
+
+  const now = new Date();
+  const curMonthKey = (MO[now.getMonth()+1]||'?') + ' ' + now.getFullYear();
+  const lf = document.getElementById('lab-sel').value;
+  const pf = document.getElementById('prac-sel').value;
+  const lf2 = document.getElementById('lsa-sel').value;
+  const curMonthData = data.filter(d => {
+    if (pracStatus === 'active' && !d.isActive) return false;
+    if (lf && d.lab !== lf) return false;
+    if (pf && d.practice !== pf) return false;
+    if (lf2 && d.lsa !== lf2) return false;
+    if (cLab && d.lab !== cLab) return false;
+    if (cPrac && d.practice !== cPrac) return false;
+    return d.month === curMonthKey;
+  });
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+  const dayOfMonth = now.getDate();
+  const mtdTox = curMonthData.reduce((s,d)=>s+d.tox,0);
+  const mtdMol = curMonthData.reduce((s,d)=>s+d.mol,0);
+  const mtdRev = calcRev(mtdTox, mtdMol);
+  const projMonthRev = dayOfMonth > 0 ? (mtdRev / dayOfMonth) * daysInMonth : 0;
+  const pct = Math.round((dayOfMonth / daysInMonth) * 100);
+  document.getElementById('r-month-proj').textContent = curMonthData.length > 0 ? fmtRev(projMonthRev) : '—';
+  document.getElementById('r-month-proj-sub').textContent = curMonthData.length > 0
+    ? `${pct}% through ${curMonthKey} · ${fmtRev(mtdRev)} so far`
+    : 'no data for current month';
 }
 
 function lpGrid(f) {
@@ -506,7 +543,29 @@ function pracTable(f) {
   }).join('');
 }
 
-loadData();
+// Password gate — change the password below
+const DASHBOARD_PASSWORD = "QandD2026";
+
+function checkPw() {
+  const val = document.getElementById("pw-input").value;
+  if (val === DASHBOARD_PASSWORD) {
+    sessionStorage.setItem("lsa_auth", "1");
+    document.getElementById("pw-gate").style.display = "none";
+    loadData();
+  } else {
+    document.getElementById("pw-error").textContent = "Incorrect password. Try again.";
+    document.getElementById("pw-input").value = "";
+    document.getElementById("pw-input").focus();
+  }
+}
+
+// Auto-unlock if already authenticated this session
+if (sessionStorage.getItem("lsa_auth") === "1") {
+  document.getElementById("pw-gate").style.display = "none";
+  loadData();
+} else {
+  setTimeout(() => document.getElementById("pw-input").focus(), 100);
+}
 </script>
 </body>
 </html>
