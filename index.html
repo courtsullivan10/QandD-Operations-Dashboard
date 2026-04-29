@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +7,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root {
+:root, [data-theme="dark"] {
   --bg: #0f1117; --bg2: #181c27; --bg3: #1e2333;
   --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.13);
   --text: #e8eaf0; --text2: #a0a6b8; --text3: #7a8299;
@@ -16,10 +16,23 @@
   --amber: #f5a623; --amber-bg: rgba(245,166,35,0.1); --amber-border: rgba(245,166,35,0.28);
   --purple: #9b7ff4; --teal: #2dd4bf;
   --radius: 10px; --radius-sm: 6px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.4);
+  --grid-color: rgba(255,255,255,0.05); --tick-color: #4e5568;
+}
+[data-theme="light"] {
+  --bg: #f4f5f7; --bg2: #ffffff; --bg3: #f0f1f4;
+  --border: rgba(0,0,0,0.08); --border2: rgba(0,0,0,0.14);
+  --text: #111827; --text2: #4b5563; --text3: #9ca3af;
+  --blue: #2563eb; --blue-bg: rgba(37,99,235,0.08); --blue-border: rgba(37,99,235,0.25);
+  --green: #16a34a; --green-bg: rgba(22,163,74,0.08); --green-border: rgba(22,163,74,0.25);
+  --amber: #d97706; --amber-bg: rgba(217,119,6,0.08); --amber-border: rgba(217,119,6,0.25);
+  --purple: #7c3aed; --teal: #0d9488;
+  --shadow: 0 1px 3px rgba(0,0,0,0.1);
+  --grid-color: rgba(0,0,0,0.06); --tick-color: #9ca3af;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-.topbar { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 100; gap: 12px; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; transition: background .2s, color .2s; }
+.topbar { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 100; gap: 12px; box-shadow: var(--shadow); }
 .topbar-left { display: flex; align-items: center; gap: 14px; }
 .logo { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.02em; white-space: nowrap; }
 .logo span { color: var(--blue); }
@@ -32,17 +45,25 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .refresh-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-family: 'DM Sans', sans-serif; padding: 6px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--bg3); color: var(--text2); cursor: pointer; transition: all .15s; white-space: nowrap; }
 .refresh-btn:hover { border-color: var(--blue-border); color: var(--blue); background: var(--blue-bg); }
 .refresh-btn:disabled { opacity: 0.5; cursor: default; }
+.theme-toggle { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; padding: 5px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--bg3); transition: all .15s; user-select: none; }
+.theme-toggle:hover { border-color: var(--blue-border); }
+.toggle-track { width: 32px; height: 18px; border-radius: 9px; background: var(--text3); position: relative; transition: background .2s; flex-shrink: 0; }
+[data-theme="light"] .toggle-track { background: var(--blue); }
+.toggle-thumb { width: 12px; height: 12px; border-radius: 50%; background: #fff; position: absolute; top: 3px; left: 3px; transition: transform .2s; }
+[data-theme="light"] .toggle-thumb { transform: translateX(14px); }
+.toggle-icon { font-size: 13px; line-height: 1; }
 .spin { display: inline-block; animation: spin 0.8s linear infinite; }
 @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 .main { padding: 1.5rem 2rem 4rem; max-width: 1400px; margin: 0 auto; }
 .loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6rem 2rem; gap: 14px; color: var(--text2); }
 .big-spin { font-size: 30px; animation: spin 0.8s linear infinite; }
 .loading-state p { font-size: 14px; color: var(--text3); }
-.error-box { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: var(--radius); padding: 14px 18px; color: #fca5a5; font-size: 13px; margin-bottom: 1.5rem; line-height: 1.6; }
-.filter-panel { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+.error-box { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: var(--radius); padding: 14px 18px; color: #dc2626; font-size: 13px; margin-bottom: 1.5rem; line-height: 1.6; }
+[data-theme="dark"] .error-box { color: #fca5a5; }
+.filter-panel { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; box-shadow: var(--shadow); }
 .fg { display: flex; flex-direction: column; gap: 5px; }
 .fg label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text2); }
-.fg select, .fg input[type=date] { font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 7px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--bg3); color: var(--text); min-width: 150px; outline: none; cursor: pointer; appearance: auto; }
+.fg select, .fg input[type=date] { font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 7px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--bg3); color: var(--text); min-width: 150px; outline: none; cursor: pointer; appearance: auto; transition: background .2s, color .2s, border-color .2s; }
 .fg select:focus, .fg input:focus { border-color: var(--blue-border); }
 .pills-row { display: flex; flex-wrap: wrap; gap: 6px; }
 .pill { padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border2); background: transparent; color: var(--text2); font-size: 12px; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all .15s; white-space: nowrap; }
@@ -58,14 +79,14 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .chip:hover .x { opacity: 1; }
 .section-header { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text2); margin-bottom: 8px; margin-top: 6px; }
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 10px; }
-.kpi { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+.kpi { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); transition: background .2s, border-color .2s; }
 .kpi-label { font-size: 11px; color: var(--text2); margin-bottom: 8px; font-weight: 500; }
 .kpi-value { font-size: 26px; font-weight: 600; color: var(--text); letter-spacing: -0.03em; line-height: 1; }
 .kpi-value.green { color: var(--green); }
 .kpi-value.amber { color: var(--amber); }
 .kpi-sub { font-size: 11px; color: var(--text2); margin-top: 4px; }
 .lp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 10px; margin-bottom: 1.25rem; }
-.lp-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; cursor: pointer; transition: all .15s; }
+.lp-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; cursor: pointer; transition: all .15s; box-shadow: var(--shadow); }
 .lp-card:hover { border-color: var(--border2); transform: translateY(-1px); }
 .lp-card.sel { border-color: var(--blue-border); background: var(--blue-bg); }
 .lp-card-name { font-size: 12px; color: var(--text2); margin-bottom: 4px; font-weight: 500; }
@@ -75,12 +96,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .lp-card-rev { font-size: 13px; font-weight: 500; color: var(--green); margin-top: 4px; }
 .lp-card-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
 .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); transition: background .2s, border-color .2s; }
 .card.full { grid-column: 1 / -1; }
 .card-title { font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text2); margin-bottom: 12px; }
 .card-subtitle { font-size: 11px; color: var(--text2); margin-top: -8px; margin-bottom: 14px; line-height: 1.5; }
 .proj-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
-.proj-item { background: var(--bg3); border-radius: var(--radius-sm); padding: 14px 16px; }
+.proj-item { background: var(--bg3); border-radius: var(--radius-sm); padding: 14px 16px; transition: background .2s; }
 .proj-label { font-size: 11px; color: var(--text2); margin-bottom: 6px; font-weight: 500; }
 .proj-value { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
 .proj-value.green { color: var(--green); }
@@ -97,7 +118,7 @@ table.dt tr.cr:hover { background: var(--bg3); }
 .badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.04em; }
 .badge-count { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
 .badge-active { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
-.badge-inactive { background: rgba(255,255,255,0.04); color: var(--text3); border: 1px solid var(--border); }
+.badge-inactive { background: var(--bg3); color: var(--text3); border: 1px solid var(--border); }
 @media (max-width: 720px) {
   .main { padding: 1rem 1rem 3rem; } .topbar { padding: 0 1rem; }
   .charts-grid { grid-template-columns: 1fr; } .card.full { grid-column: 1; }
@@ -124,6 +145,11 @@ table.dt tr.cr:hover { background: var(--bg3); }
   </div>
   <div class="topbar-right">
     <span class="last-updated" id="last-updated"></span>
+    <div class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">
+      <span class="toggle-icon">🌙</span>
+      <div class="toggle-track"><div class="toggle-thumb"></div></div>
+      <span class="toggle-icon">☀️</span>
+    </div>
     <button class="refresh-btn" onclick="loadData()" id="refresh-btn">↻ Refresh</button>
   </div>
 </div>
@@ -247,12 +273,31 @@ table.dt tr.cr:hover { background: var(--bg3); }
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbyrUApkwRK3RFOk-SjihbB1L7b6wAwJB303fLStg9-Uj5K5_cq4yH-rP2erxvrB-GM0/exec';
 const MO = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const GRID = 'rgba(255,255,255,0.05)', TICK = '#4e5568';
 const TOX_RATE = 180, MOL_RATE = 400;
 
 let data = [], activePracs = new Set();
 let sType = 'all', cLab = '', cPrac = '', aPreset = 'all', fFrom = '', fTo = '', pracStatus = 'active';
 let charts = {};
+let currentTheme = localStorage.getItem('qd_theme') || 'dark';
+
+function applyTheme(theme) {
+  currentTheme = theme;
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('qd_theme', theme);
+  if (data.length > 0) go();
+}
+
+function toggleTheme() {
+  applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+}
+
+function getChartColors() {
+  const isDark = currentTheme === 'dark';
+  return {
+    grid: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
+    tick: isDark ? '#4e5568' : '#9ca3af'
+  };
+}
 
 function toISO(d) { const p = d.split('/'); if (p.length < 3) return ''; return (p[2]||'2026') + '-' + p[0].padStart(2,'0') + '-' + p[1].padStart(2,'0'); }
 function fmtISO(d) { return d.toISOString().slice(0,10); }
@@ -288,9 +333,7 @@ async function loadData() {
 
 function populateSelects() {
   const src = pracStatus === 'active' ? data.filter(d => d.isActive) : data;
-  const labSel = document.getElementById('lab-sel');
-  const pracSel = document.getElementById('prac-sel');
-  const lsaSel = document.getElementById('lsa-sel');
+  const labSel = document.getElementById('lab-sel'), pracSel = document.getElementById('prac-sel'), lsaSel = document.getElementById('lsa-sel');
   const prevLab = labSel.value, prevPrac = pracSel.value, prevLsa = lsaSel.value;
   [labSel, pracSel, lsaSel].forEach(s => { while (s.options.length > 1) s.remove(1); });
   [...new Set(src.map(d => d.lab))].filter(Boolean).sort().forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = v; labSel.appendChild(o); });
@@ -334,8 +377,7 @@ function setPracStatus(s, el) {
   document.querySelectorAll('#status-pills .pill').forEach(x => x.classList.remove('active', 'active-green'));
   el.classList.add('active'); if (s === 'active') el.classList.add('active-green');
   cPrac = ''; document.getElementById('prac-sel').value = '';
-  populateSelects();
-  go();
+  populateSelects(); go();
 }
 
 function getVal(d) { return sType==='tox' ? d.tox : sType==='mol' ? d.mol : sType==='blood' ? d.blood : d.tox+d.mol+d.blood; }
@@ -343,9 +385,7 @@ function typeLabel() { return sType==='tox' ? 'Toxicology' : sType==='mol' ? 'Mo
 function setType(t, el) { sType = t; document.querySelectorAll('#type-pills .pill').forEach(x => x.classList.remove('active')); el.classList.add('active'); go(); }
 
 function go() {
-  const lf = document.getElementById('lab-sel').value;
-  const pf = document.getElementById('prac-sel').value;
-  const lf2 = document.getElementById('lsa-sel').value;
+  const lf = document.getElementById('lab-sel').value, pf = document.getElementById('prac-sel').value, lf2 = document.getElementById('lsa-sel').value;
   const f = data.filter(d => {
     if (pracStatus === 'active' && !d.isActive) return false;
     if (lf && d.lab !== lf) return false;
@@ -375,146 +415,136 @@ function renderChips(lf, pf, lf2) {
 }
 
 function kpis(f) {
-  const totTox = f.reduce((s,d)=>s+d.tox,0);
-  const totMol = f.reduce((s,d)=>s+d.mol,0);
-  const totRev = calcRev(totTox, totMol);
-  const days = new Set(f.map(d=>d.date)).size;
-  const pracs = new Set(f.map(d=>d.practice)).size;
-  const lsas = new Set(f.map(d=>d.lsa)).size;
-  document.getElementById('k0-lbl').textContent = typeLabel();
-  document.getElementById('k-total').textContent = f.reduce((s,d)=>s+getVal(d),0).toLocaleString();
-  document.getElementById('k-tox').textContent = totTox.toLocaleString();
-  document.getElementById('k-mol').textContent = totMol.toLocaleString();
-  document.getElementById('k-lsa').textContent = lsas;
-  document.getElementById('k-prac').textContent = pracs;
-  document.getElementById('k-days').textContent = days;
-  document.getElementById('r-total').textContent = fmtRev(totRev);
-  document.getElementById('r-tox').textContent = fmtRev(totTox * TOX_RATE);
-  document.getElementById('r-mol').textContent = fmtRev(totMol * MOL_RATE);
-  document.getElementById('r-per-day').textContent = days > 0 ? fmtRev(totRev/days) : '—';
-  document.getElementById('r-per-prac').textContent = pracs > 0 ? fmtRev(totRev/pracs) : '—';
-  document.getElementById('r-per-lsa').textContent = lsas > 0 ? fmtRev(totRev/lsas) : '—';
-
-  const now = new Date();
-  const curMonthKey = (MO[now.getMonth()+1]||'?') + ' ' + now.getFullYear();
-  const lf = document.getElementById('lab-sel').value;
-  const pf = document.getElementById('prac-sel').value;
-  const lf2 = document.getElementById('lsa-sel').value;
-  const curMonthData = data.filter(d => {
-    if (pracStatus === 'active' && !d.isActive) return false;
-    if (lf && d.lab !== lf) return false;
-    if (pf && d.practice !== pf) return false;
-    if (lf2 && d.lsa !== lf2) return false;
-    if (cLab && d.lab !== cLab) return false;
-    if (cPrac && d.practice !== cPrac) return false;
-    return d.month === curMonthKey;
+  const totTox=f.reduce((s,d)=>s+d.tox,0), totMol=f.reduce((s,d)=>s+d.mol,0);
+  const totRev=calcRev(totTox,totMol), days=new Set(f.map(d=>d.date)).size;
+  const pracs=new Set(f.map(d=>d.practice)).size, lsas=new Set(f.map(d=>d.lsa)).size;
+  document.getElementById('k0-lbl').textContent=typeLabel();
+  document.getElementById('k-total').textContent=f.reduce((s,d)=>s+getVal(d),0).toLocaleString();
+  document.getElementById('k-tox').textContent=totTox.toLocaleString();
+  document.getElementById('k-mol').textContent=totMol.toLocaleString();
+  document.getElementById('k-lsa').textContent=lsas;
+  document.getElementById('k-prac').textContent=pracs;
+  document.getElementById('k-days').textContent=days;
+  document.getElementById('r-total').textContent=fmtRev(totRev);
+  document.getElementById('r-tox').textContent=fmtRev(totTox*TOX_RATE);
+  document.getElementById('r-mol').textContent=fmtRev(totMol*MOL_RATE);
+  document.getElementById('r-per-day').textContent=days>0?fmtRev(totRev/days):'—';
+  document.getElementById('r-per-prac').textContent=pracs>0?fmtRev(totRev/pracs):'—';
+  document.getElementById('r-per-lsa').textContent=lsas>0?fmtRev(totRev/lsas):'—';
+  const now=new Date(), curMonthKey=(MO[now.getMonth()+1]||'?')+' '+now.getFullYear();
+  const lf=document.getElementById('lab-sel').value, pf=document.getElementById('prac-sel').value, lf2=document.getElementById('lsa-sel').value;
+  const cmd=data.filter(d=>{
+    if(pracStatus==='active'&&!d.isActive)return false;
+    if(lf&&d.lab!==lf)return false; if(pf&&d.practice!==pf)return false; if(lf2&&d.lsa!==lf2)return false;
+    if(cLab&&d.lab!==cLab)return false; if(cPrac&&d.practice!==cPrac)return false;
+    return d.month===curMonthKey;
   });
-  const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
-  const dayOfMonth = now.getDate();
-  const mtdTox = curMonthData.reduce((s,d)=>s+d.tox,0);
-  const mtdMol = curMonthData.reduce((s,d)=>s+d.mol,0);
-  const mtdRev = calcRev(mtdTox, mtdMol);
-  const projMonthRev = dayOfMonth > 0 ? (mtdRev / dayOfMonth) * daysInMonth : 0;
-  const pct = Math.round((dayOfMonth / daysInMonth) * 100);
-  document.getElementById('r-month-proj').textContent = curMonthData.length > 0 ? fmtRev(projMonthRev) : '—';
-  document.getElementById('r-month-proj-sub').textContent = curMonthData.length > 0
-    ? `${pct}% through ${curMonthKey} · ${fmtRev(mtdRev)} so far`
-    : 'no data for current month';
+  const dim=new Date(now.getFullYear(),now.getMonth()+1,0).getDate(), dom=now.getDate();
+  const mtdTox=cmd.reduce((s,d)=>s+d.tox,0), mtdMol=cmd.reduce((s,d)=>s+d.mol,0);
+  const mtdRev=calcRev(mtdTox,mtdMol), proj=dom>0?(mtdRev/dom)*dim:0;
+  document.getElementById('r-month-proj').textContent=cmd.length>0?fmtRev(proj):'—';
+  document.getElementById('r-month-proj-sub').textContent=cmd.length>0?`${Math.round((dom/dim)*100)}% through ${curMonthKey} · ${fmtRev(mtdRev)} so far`:'no data for current month';
 }
 
 function lpGrid(f) {
-  const src = pracStatus === 'active' ? data.filter(d=>d.isActive) : data;
-  const byLab = {};
-  [...new Set(src.map(d=>d.lab))].forEach(l => byLab[l]={total:0,tox:0,mol:0,entries:0});
-  f.forEach(d => { if(byLab[d.lab]){byLab[d.lab].total+=getVal(d);byLab[d.lab].tox+=d.tox;byLab[d.lab].mol+=d.mol;byLab[d.lab].entries++;} });
-  const grid = document.getElementById('lp-grid'); grid.innerHTML='';
-  Object.entries(byLab).sort((a,b)=>b[1].total-a[1].total).forEach(([lab,v]) => {
-    const rev = calcRev(v.tox, v.mol);
-    const c = document.createElement('div'); c.className='lp-card'+(cLab===lab?' sel':'');
+  const src=pracStatus==='active'?data.filter(d=>d.isActive):data;
+  const byLab={};
+  [...new Set(src.map(d=>d.lab))].forEach(l=>byLab[l]={total:0,tox:0,mol:0,entries:0});
+  f.forEach(d=>{if(byLab[d.lab]){byLab[d.lab].total+=getVal(d);byLab[d.lab].tox+=d.tox;byLab[d.lab].mol+=d.mol;byLab[d.lab].entries++;}});
+  const grid=document.getElementById('lp-grid'); grid.innerHTML='';
+  Object.entries(byLab).sort((a,b)=>b[1].total-a[1].total).forEach(([lab,v])=>{
+    const rev=calcRev(v.tox,v.mol);
+    const c=document.createElement('div'); c.className='lp-card'+(cLab===lab?' sel':'');
     c.innerHTML=`<div class="lp-card-name">${lab}</div><div class="lp-card-total">${v.total.toLocaleString()}</div><div class="lp-card-rev">${fmtRev(rev)} est.</div><div class="lp-card-sub">${v.entries} entries</div>`;
     c.onclick=()=>{cLab=cLab===lab?'':lab;go();}; grid.appendChild(c);
   });
 }
 
 function projection(f) {
-  const mo = {Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
-  const byMonth = {};
-  f.forEach(d => { if(!byMonth[d.month])byMonth[d.month]={tox:0,mol:0}; byMonth[d.month].tox+=d.tox; byMonth[d.month].mol+=d.mol; });
-  const months = Object.keys(byMonth).sort((a,b)=>{const[am,ay]=a.split(' '),[bm,by]=b.split(' ');return(parseInt(ay)-parseInt(by))||mo[am]-mo[bm];});
-  const n = months.length || 1;
-  const totTox = f.reduce((s,d)=>s+d.tox,0);
-  const totMol = f.reduce((s,d)=>s+d.mol,0);
-  const avgTox = totTox/n, avgMol = totMol/n;
-  const avgRev = calcRev(avgTox, avgMol);
-  document.getElementById('proj-subtitle').textContent = `Based on ${n} month${n!==1?'s':''} of data · avg ${Math.round(avgTox).toLocaleString()} tox + ${Math.round(avgMol).toLocaleString()} mol / month`;
-  const items = [
-    {label:'Avg monthly revenue', val:avgRev, cls:'green'},
-    {label:'Avg monthly tox samples', val:avgTox, cls:'blue', num:true},
-    {label:'Avg monthly mol samples', val:avgMol, cls:'blue', num:true},
-    {label:'Projected quarterly revenue', val:avgRev*3, cls:'green'},
-    {label:'Projected annual revenue', val:avgRev*12, cls:'amber'},
-    {label:'Projected annual tox samples', val:avgTox*12, cls:'blue', num:true},
+  const mo={Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
+  const byMonth={};
+  f.forEach(d=>{if(!byMonth[d.month])byMonth[d.month]={tox:0,mol:0};byMonth[d.month].tox+=d.tox;byMonth[d.month].mol+=d.mol;});
+  const months=Object.keys(byMonth).sort((a,b)=>{const[am,ay]=a.split(' '),[bm,by]=b.split(' ');return(parseInt(ay)-parseInt(by))||mo[am]-mo[bm];});
+  const n=months.length||1, totTox=f.reduce((s,d)=>s+d.tox,0), totMol=f.reduce((s,d)=>s+d.mol,0);
+  const avgTox=totTox/n, avgMol=totMol/n, avgRev=calcRev(avgTox,avgMol);
+  document.getElementById('proj-subtitle').textContent=`Based on ${n} month${n!==1?'s':''} of data · avg ${Math.round(avgTox).toLocaleString()} tox + ${Math.round(avgMol).toLocaleString()} mol / month`;
+  const items=[
+    {label:'Avg monthly revenue',val:avgRev,cls:'green'},
+    {label:'Avg monthly tox samples',val:avgTox,cls:'blue',num:true},
+    {label:'Avg monthly mol samples',val:avgMol,cls:'blue',num:true},
+    {label:'Projected quarterly revenue',val:avgRev*3,cls:'green'},
+    {label:'Projected annual revenue',val:avgRev*12,cls:'amber'},
+    {label:'Projected annual tox samples',val:avgTox*12,cls:'blue',num:true},
   ];
-  const grid = document.getElementById('proj-grid'); grid.innerHTML='';
-  items.forEach(item => {
+  const grid=document.getElementById('proj-grid'); grid.innerHTML='';
+  items.forEach(item=>{
     const el=document.createElement('div'); el.className='proj-item';
     el.innerHTML=`<div class="proj-label">${item.label}</div><div class="proj-value ${item.cls}">${item.num?Math.round(item.val).toLocaleString():fmtRevFull(item.val)}</div>`;
     grid.appendChild(el);
   });
 }
 
-function dc(id) { if(charts[id]){charts[id].destroy();delete charts[id];} }
+function dc(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 
-function timeChart(f) {
-  dc('t'); const bm={};
-  f.forEach(d=>{if(!bm[d.month])bm[d.month]=0;bm[d.month]+=getVal(d);});
+function timeChart(f){
+  dc('t');const bm={};f.forEach(d=>{if(!bm[d.month])bm[d.month]=0;bm[d.month]+=getVal(d);});
   const mo={Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
   const lbs=Object.keys(bm).sort((a,b)=>{const[am,ay]=a.split(' '),[bm2,by]=b.split(' ');return(parseInt(ay)-parseInt(by))||mo[am]-mo[bm2];});
+  const {grid,tick}=getChartColors();
   document.getElementById('t-title').textContent=typeLabel()+' by month';
-  charts.t=new Chart(document.getElementById('cTime'),{type:'bar',data:{labels:lbs,datasets:[{data:lbs.map(l=>bm[l]),backgroundColor:'#4f8ef7',borderWidth:0,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:TICK,autoSkip:false,maxRotation:45},grid:{color:GRID}},y:{ticks:{color:TICK},grid:{color:GRID},beginAtZero:true}}}});
+  charts.t=new Chart(document.getElementById('cTime'),{type:'bar',data:{labels:lbs,datasets:[{data:lbs.map(l=>bm[l]),backgroundColor:'#4f8ef7',borderWidth:0,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:tick,autoSkip:false,maxRotation:45},grid:{color:grid}},y:{ticks:{color:tick},grid:{color:grid},beginAtZero:true}}}});
 }
 
-function revChart(f) {
-  dc('rv'); const bm={};
-  f.forEach(d=>{if(!bm[d.month])bm[d.month]=0;bm[d.month]+=calcRev(d.tox,d.mol);});
+function revChart(f){
+  dc('rv');const bm={};f.forEach(d=>{if(!bm[d.month])bm[d.month]=0;bm[d.month]+=calcRev(d.tox,d.mol);});
   const mo={Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
   const lbs=Object.keys(bm).sort((a,b)=>{const[am,ay]=a.split(' '),[bm2,by]=b.split(' ');return(parseInt(ay)-parseInt(by))||mo[am]-mo[bm2];});
-  charts.rv=new Chart(document.getElementById('cRev'),{type:'bar',data:{labels:lbs,datasets:[{data:lbs.map(l=>bm[l]),backgroundColor:'#34c77b',borderWidth:0,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmtRevFull(ctx.raw)}}},scales:{x:{ticks:{color:TICK,autoSkip:false,maxRotation:45},grid:{color:GRID}},y:{ticks:{color:TICK,callback:v=>fmtRev(v)},grid:{color:GRID},beginAtZero:true}}}});
+  const {grid,tick}=getChartColors();
+  charts.rv=new Chart(document.getElementById('cRev'),{type:'bar',data:{labels:lbs,datasets:[{data:lbs.map(l=>bm[l]),backgroundColor:'#34c77b',borderWidth:0,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmtRevFull(ctx.raw)}}},
+    scales:{x:{ticks:{color:tick,autoSkip:false,maxRotation:45},grid:{color:grid}},y:{ticks:{color:tick,callback:v=>fmtRev(v)},grid:{color:grid},beginAtZero:true}}}});
 }
 
-function dowChart(f) {
+function dowChart(f){
   dc('d');const ord=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
   const bd={};f.forEach(d=>{if(!bd[d.dow])bd[d.dow]=0;bd[d.dow]+=getVal(d);});
-  charts.d=new Chart(document.getElementById('cDow'),{type:'bar',data:{labels:ord.map(d=>d.slice(0,3)),datasets:[{data:ord.map(d=>bd[d]||0),backgroundColor:'#f5a623',borderWidth:0,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:TICK},grid:{color:GRID}},y:{ticks:{color:TICK},grid:{color:GRID},beginAtZero:true}}}});
+  const {grid,tick}=getChartColors();
+  charts.d=new Chart(document.getElementById('cDow'),{type:'bar',data:{labels:ord.map(d=>d.slice(0,3)),datasets:[{data:ord.map(d=>bd[d]||0),backgroundColor:'#f5a623',borderWidth:0,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:tick},grid:{color:grid}},y:{ticks:{color:tick},grid:{color:grid},beginAtZero:true}}}});
 }
 
-function lsaChart(f) {
+function lsaChart(f){
   dc('l');const bl={};f.forEach(d=>{if(!bl[d.lsa])bl[d.lsa]=0;bl[d.lsa]+=getVal(d);});
   const s=Object.entries(bl).sort((a,b)=>b[1]-a[1]).slice(0,12);
   document.getElementById('lsa-wrap').style.height=Math.max(220,s.length*36+60)+'px';
-  charts.l=new Chart(document.getElementById('cLsa'),{type:'bar',data:{labels:s.map(e=>e[0]),datasets:[{data:s.map(e=>e[1]),backgroundColor:'#9b7ff4',borderWidth:0,borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:TICK},grid:{color:GRID}},y:{ticks:{color:TICK,font:{size:12}},grid:{color:GRID}}}}});
+  const {grid,tick}=getChartColors();
+  charts.l=new Chart(document.getElementById('cLsa'),{type:'bar',data:{labels:s.map(e=>e[0]),datasets:[{data:s.map(e=>e[1]),backgroundColor:'#9b7ff4',borderWidth:0,borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:tick},grid:{color:grid}},y:{ticks:{color:tick,font:{size:12}},grid:{color:grid}}}}});
 }
 
-function pracChart(f) {
+function pracChart(f){
   dc('p');const bp={};f.forEach(d=>{if(!bp[d.practice])bp[d.practice]=0;bp[d.practice]+=getVal(d);});
   const s=Object.entries(bp).sort((a,b)=>b[1]-a[1]).slice(0,10);
   document.getElementById('prac-wrap').style.height=Math.max(220,s.length*36+60)+'px';
+  const {grid,tick}=getChartColors();
   charts.p=new Chart(document.getElementById('cPrac'),{type:'bar',data:{labels:s.map(e=>e[0]),datasets:[{data:s.map(e=>e[1]),backgroundColor:'#2dd4bf',borderWidth:0,borderRadius:4}]},
-  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:TICK},grid:{color:GRID}},y:{ticks:{color:TICK,font:{size:11}},grid:{color:GRID}}},
-  onClick:(evt,els)=>{if(els.length>0){const p=s[els[0].index][0];cPrac=cPrac===p?'':p;document.getElementById('prac-sel').value=cPrac;go();}}}});
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:tick},grid:{color:grid}},y:{ticks:{color:tick,font:{size:11}},grid:{color:grid}}},
+    onClick:(evt,els)=>{if(els.length>0){const p=s[els[0].index][0];cPrac=cPrac===p?'':p;document.getElementById('prac-sel').value=cPrac;go();}}}});
 }
 
-function revPracChart(f) {
+function revPracChart(f){
   dc('rp');const bp={};f.forEach(d=>{if(!bp[d.practice])bp[d.practice]=0;bp[d.practice]+=calcRev(d.tox,d.mol);});
   const s=Object.entries(bp).sort((a,b)=>b[1]-a[1]).slice(0,10);
   document.getElementById('rev-prac-wrap').style.height=Math.max(220,s.length*36+60)+'px';
+  const {grid,tick}=getChartColors();
   charts.rp=new Chart(document.getElementById('cRevPrac'),{type:'bar',data:{labels:s.map(e=>e[0]),datasets:[{data:s.map(e=>e[1]),backgroundColor:'#34c77b',borderWidth:0,borderRadius:4}]},
-  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmtRevFull(ctx.raw)}}},scales:{x:{ticks:{color:TICK,callback:v=>fmtRev(v)},grid:{color:GRID}},y:{ticks:{color:TICK,font:{size:11}},grid:{color:GRID}}}}});
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmtRevFull(ctx.raw)}}},
+    scales:{x:{ticks:{color:tick,callback:v=>fmtRev(v)},grid:{color:grid}},y:{ticks:{color:tick,font:{size:11}},grid:{color:grid}}}}});
 }
 
-function lsaTable(f) {
-  const bl={};
-  f.forEach(d=>{if(!bl[d.lsa])bl[d.lsa]={tox:0,mol:0,blood:0,n:0};bl[d.lsa].tox+=d.tox;bl[d.lsa].mol+=d.mol;bl[d.lsa].blood+=d.blood;bl[d.lsa].n++;});
+function lsaTable(f){
+  const bl={};f.forEach(d=>{if(!bl[d.lsa])bl[d.lsa]={tox:0,mol:0,blood:0,n:0};bl[d.lsa].tox+=d.tox;bl[d.lsa].mol+=d.mol;bl[d.lsa].blood+=d.blood;bl[d.lsa].n++;});
   const s=Object.entries(bl).sort((a,b)=>(b[1].tox+b[1].mol+b[1].blood)-(a[1].tox+a[1].mol+a[1].blood));
   const all=sType==='all';
   [['h-tox','tox'],['h-mol','mol'],['h-bld','blood']].forEach(([id,t])=>document.getElementById(id).style.display=all||sType===t?'':'none');
@@ -524,9 +554,8 @@ function lsaTable(f) {
   }).join('');
 }
 
-function pracTable(f) {
-  const bp={};
-  f.forEach(d=>{if(!bp[d.practice])bp[d.practice]={tox:0,mol:0,blood:0,labs:new Set(),isActive:d.isActive};bp[d.practice].tox+=d.tox;bp[d.practice].mol+=d.mol;bp[d.practice].blood+=d.blood;bp[d.practice].labs.add(d.lab);});
+function pracTable(f){
+  const bp={};f.forEach(d=>{if(!bp[d.practice])bp[d.practice]={tox:0,mol:0,blood:0,labs:new Set(),isActive:d.isActive};bp[d.practice].tox+=d.tox;bp[d.practice].mol+=d.mol;bp[d.practice].blood+=d.blood;bp[d.practice].labs.add(d.lab);});
   const s=Object.entries(bp).sort((a,b)=>(b[1].tox+b[1].mol+b[1].blood)-(a[1].tox+a[1].mol+a[1].blood));
   const all=sType==='all';
   [['ph-tox','tox'],['ph-mol','mol'],['ph-bld','blood']].forEach(([id,t])=>document.getElementById(id).style.display=all||sType===t?'':'none');
@@ -542,6 +571,9 @@ function pracTable(f) {
       <td><strong>${tot}</strong></td><td class="rev-cell">${fmtRevFull(calcRev(v.tox,v.mol))}</td></tr>`;
   }).join('');
 }
+
+// Apply saved theme on load
+applyTheme(currentTheme);
 
 // Password gate — change the password below
 const DASHBOARD_PASSWORD = "QandD2026";
@@ -559,7 +591,6 @@ function checkPw() {
   }
 }
 
-// Auto-unlock if already authenticated this session
 if (sessionStorage.getItem("lsa_auth") === "1") {
   document.getElementById("pw-gate").style.display = "none";
   loadData();
