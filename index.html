@@ -204,6 +204,22 @@ table.dt tr.cr:hover { background: var(--bg3); }
 
     <div class="chips" id="chips"></div>
 
+    <div id="lsa-pay-banner" style="display:none;background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:var(--radius);padding:12px 18px;margin-bottom:12px;align-items:center;flex-wrap:wrap;gap:12px">
+      <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:200px">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0" id="lsa-pay-avatar"></div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text)" id="lsa-pay-name"></div>
+          <div style="font-size:11px;color:var(--text2)" id="lsa-pay-lab"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:20px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);margin-bottom:3px">Hourly rate</div>
+          <div style="font-size:22px;font-weight:700;color:var(--blue);font-family:'DM Mono',monospace" id="lsa-pay-rate">—</div>
+        </div>
+      </div>
+    </div>
+
     <div class="section-header">Collections</div>
     <div class="kpis">
       <div class="kpi"><div class="kpi-label" id="k0-lbl">Total collections</div><div class="kpi-value" id="k-total">—</div><div class="kpi-sub">samples</div></div>
@@ -271,11 +287,11 @@ table.dt tr.cr:hover { background: var(--bg3); }
 </div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbyrUApkwRK3RFOk-SjihbB1L7b6wAwJB303fLStg9-Uj5K5_cq4yH-rP2erxvrB-GM0/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbw-7rpuzOcyyPx2kybVsgRbstmMP06oteHM_RIaqDFm0ZwCicEa7cLpz35HMq3Ll5J3/exec';
 const MO = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const TOX_RATE = 180, MOL_RATE = 400;
 
-let data = [], activePracs = new Set();
+let data = [], activePracs = new Set(), payRates = {};
 let sType = 'all', cLab = '', cPrac = '', aPreset = 'all', fFrom = '', fTo = '', pracStatus = 'active';
 let charts = {};
 let currentTheme = localStorage.getItem('qd_theme') || 'dark';
@@ -286,17 +302,10 @@ function applyTheme(theme) {
   localStorage.setItem('qd_theme', theme);
   if (data.length > 0) go();
 }
-
-function toggleTheme() {
-  applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
-}
-
+function toggleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
 function getChartColors() {
   const isDark = currentTheme === 'dark';
-  return {
-    grid: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
-    tick: isDark ? '#4e5568' : '#9ca3af'
-  };
+  return { grid: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)', tick: isDark ? '#4e5568' : '#9ca3af' };
 }
 
 function toISO(d) { const p = d.split('/'); if (p.length < 3) return ''; return (p[2]||'2026') + '-' + p[0].padStart(2,'0') + '-' + p[1].padStart(2,'0'); }
@@ -314,6 +323,7 @@ async function loadData() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
     activePracs = new Set(json.activePractices || []);
+    payRates = json.payRates || {};
     data = (json.rows || []).map(r => {
       const p = r.date.split('/');
       return { ...r, iso: toISO(r.date), isActive: activePracs.has(r.practice), month: (MO[parseInt(p[0])]||'?') + ' ' + (p[2]||'2026') };
@@ -398,9 +408,22 @@ function go() {
     return true;
   });
   renderChips(lf, pf, lf2);
+  updatePayBanner(lf2);
   kpis(f); lpGrid(f); projection(f);
   timeChart(f); revChart(f); dowChart(f); lsaChart(f); pracChart(f); revPracChart(f);
   lsaTable(f); pracTable(f);
+}
+
+function updatePayBanner(lsaName) {
+  const banner = document.getElementById('lsa-pay-banner');
+  if (!lsaName || !payRates[lsaName]) { banner.style.display = 'none'; return; }
+  const p = payRates[lsaName];
+  const initials = lsaName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('lsa-pay-avatar').textContent = initials;
+  document.getElementById('lsa-pay-name').textContent = lsaName;
+  document.getElementById('lsa-pay-lab').textContent = p.labClient ? 'Lab client: ' + p.labClient : 'No lab client on file';
+  document.getElementById('lsa-pay-rate').textContent = '$' + p.rate.toFixed(2) + '/hr';
+  banner.style.display = 'flex';
 }
 
 function renderChips(lf, pf, lf2) {
@@ -572,12 +595,9 @@ function pracTable(f){
   }).join('');
 }
 
-// Apply saved theme on load
 applyTheme(currentTheme);
 
-// Password gate — change the password below
-const DASHBOARD_PASSWORD = "QandD2026";
-
+const DASHBOARD_PASSWORD = "lsa2026";
 function checkPw() {
   const val = document.getElementById("pw-input").value;
   if (val === DASHBOARD_PASSWORD) {
@@ -590,7 +610,6 @@ function checkPw() {
     document.getElementById("pw-input").focus();
   }
 }
-
 if (sessionStorage.getItem("lsa_auth") === "1") {
   document.getElementById("pw-gate").style.display = "none";
   loadData();
