@@ -100,13 +100,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .card.full { grid-column: 1 / -1; }
 .card-title { font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text2); margin-bottom: 12px; }
 .card-subtitle { font-size: 11px; color: var(--text2); margin-top: -8px; margin-bottom: 14px; line-height: 1.5; }
-.proj-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
-.proj-item { background: var(--bg3); border-radius: var(--radius-sm); padding: 14px 16px; transition: background .2s; }
-.proj-label { font-size: 11px; color: var(--text2); margin-bottom: 6px; font-weight: 500; }
-.proj-value { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
-.proj-value.green { color: var(--green); }
-.proj-value.amber { color: var(--amber); }
-.proj-value.blue { color: var(--blue); }
+.proj-grid { width: 100%; }
 .table-wrap { overflow-x: auto; }
 table.dt { width: 100%; border-collapse: collapse; font-size: 13px; }
 table.dt th { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text2); text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
@@ -245,7 +239,7 @@ table.dt tr.cr:hover { background: var(--bg3); }
     <div class="lp-grid" id="lp-grid"></div>
 
     <div class="card full" style="margin-bottom:10px">
-      <div class="card-title">Revenue projection</div>
+      <div class="card-title">Revenue & volume projections <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3);font-size:10px">· projected from monthly averages</span></div>
       <div class="card-subtitle" id="proj-subtitle"></div>
       <div class="proj-grid" id="proj-grid"></div>
     </div>
@@ -487,25 +481,143 @@ function projection(f) {
   const mo={Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
   const byMonth={};
   f.forEach(d=>{if(!byMonth[d.month])byMonth[d.month]={tox:0,mol:0};byMonth[d.month].tox+=d.tox;byMonth[d.month].mol+=d.mol;});
-  const months=Object.keys(byMonth).sort((a,b)=>{const[am,ay]=a.split(' '),[bm,by]=b.split(' ');return(parseInt(ay)-parseInt(by))||mo[am]-mo[bm];});
-  const n=months.length||1, totTox=f.reduce((s,d)=>s+d.tox,0), totMol=f.reduce((s,d)=>s+d.mol,0);
+  const months=Object.keys(byMonth).sort((a,b)=>{const[am,ay]=a.split(' '),[bm2,by]=b.split(' ');return(parseInt(ay)-parseInt(by))||mo[am]-mo[bm2];});
+  const n=months.length||1;
+  const totTox=f.reduce((s,d)=>s+d.tox,0), totMol=f.reduce((s,d)=>s+d.mol,0);
   const avgTox=totTox/n, avgMol=totMol/n, avgRev=calcRev(avgTox,avgMol);
-  document.getElementById('proj-subtitle').textContent=`Based on ${n} month${n!==1?'s':''} of data · avg ${Math.round(avgTox).toLocaleString()} tox + ${Math.round(avgMol).toLocaleString()} mol / month`;
-  const items=[
-    {label:'Avg monthly revenue',val:avgRev,cls:'green'},
-    {label:'Avg monthly tox samples',val:avgTox,cls:'blue',num:true},
-    {label:'Avg monthly mol samples',val:avgMol,cls:'blue',num:true},
-    {label:'Projected quarterly revenue',val:avgRev*3,cls:'green'},
-    {label:'Projected annual revenue',val:avgRev*12,cls:'amber'},
-    {label:'Projected annual tox samples',val:avgTox*12,cls:'blue',num:true},
-  ];
-  const grid=document.getElementById('proj-grid'); grid.innerHTML='';
-  items.forEach(item=>{
-    const el=document.createElement('div'); el.className='proj-item';
-    el.innerHTML=`<div class="proj-label">${item.label}</div><div class="proj-value ${item.cls}">${item.num?Math.round(item.val).toLocaleString():fmtRevFull(item.val)}</div>`;
-    grid.appendChild(el);
-  });
+
+  const now=new Date();
+  const lf=document.getElementById('lab-sel').value, pf=document.getElementById('prac-sel').value, lf2=document.getElementById('lsa-sel').value;
+
+  // --- THIS MONTH ---
+  const dim=new Date(now.getFullYear(),now.getMonth()+1,0).getDate(), dom=now.getDate();
+  const curMonthKey=(MO[now.getMonth()+1]||'?')+' '+now.getFullYear();
+  const cmdFilter=d=>{
+    if(pracStatus==='active'&&!d.isActive)return false;
+    if(lf&&d.lab!==lf)return false; if(pf&&d.practice!==pf)return false; if(lf2&&d.lsa!==lf2)return false;
+    if(cLab&&d.lab!==cLab)return false; if(cPrac&&d.practice!==cPrac)return false;
+    return true;
+  };
+  const cmd=data.filter(d=>cmdFilter(d)&&d.month===curMonthKey);
+  const mtdTox=cmd.reduce((s,d)=>s+d.tox,0), mtdMol=cmd.reduce((s,d)=>s+d.mol,0);
+  const pct=dom/dim;
+  const projMonthTox=pct>0?Math.round(mtdTox/pct):Math.round(avgTox);
+  const projMonthMol=pct>0?Math.round(mtdMol/pct):Math.round(avgMol);
+  const projMonthRev=calcRev(projMonthTox,projMonthMol);
+  const hasMtd=cmd.length>0;
+  const pctLabel=Math.round(pct*100)+'% through '+curMonthKey;
+
+  // --- THIS QUARTER ---
+  const curQ=Math.floor(now.getMonth()/3);
+  const qStart=new Date(now.getFullYear(),curQ*3,1);
+  const qEnd=new Date(now.getFullYear(),curQ*3+3,0); // last day of quarter
+  const qTotalDays=Math.round((qEnd-qStart)/(1000*60*60*24))+1;
+  const qElapsedDays=Math.round((now-qStart)/(1000*60*60*24))+1;
+  const qPct=qElapsedDays/qTotalDays;
+  const qStartISO=qStart.toISOString().slice(0,10);
+  const qEndISO=qEnd.toISOString().slice(0,10);
+  const qData=data.filter(d=>cmdFilter(d)&&d.iso>=qStartISO&&d.iso<=qEndISO);
+  const qtdTox=qData.reduce((s,d)=>s+d.tox,0), qtdMol=qData.reduce((s,d)=>s+d.mol,0);
+  const projQTox=qPct>0?Math.round(qtdTox/qPct):Math.round(avgTox*3);
+  const projQMol=qPct>0?Math.round(qtdMol/qPct):Math.round(avgMol*3);
+  const projQRev=calcRev(projQTox,projQMol);
+  const qNames=['Q1','Q2','Q3','Q4'];
+  const qLabel=Math.round(qPct*100)+'% through '+qNames[curQ]+' '+now.getFullYear();
+
+  // --- THIS YEAR ---
+  const yrStart=new Date(now.getFullYear(),0,1);
+  const yrEnd=new Date(now.getFullYear(),11,31);
+  const yrTotalDays=Math.round((yrEnd-yrStart)/(1000*60*60*24))+1;
+  const yrElapsedDays=Math.round((now-yrStart)/(1000*60*60*24))+1;
+  const yrPct=yrElapsedDays/yrTotalDays;
+  const yrStartISO=yrStart.toISOString().slice(0,10);
+  const yrData=data.filter(d=>cmdFilter(d)&&d.iso>=yrStartISO);
+  const ytdTox=yrData.reduce((s,d)=>s+d.tox,0), ytdMol=yrData.reduce((s,d)=>s+d.mol,0);
+  const projYrTox=yrPct>0?Math.round(ytdTox/yrPct):Math.round(avgTox*12);
+  const projYrMol=yrPct>0?Math.round(ytdMol/yrPct):Math.round(avgMol*12);
+  const projYrRev=calcRev(projYrTox,projYrMol);
+  const yrLabel=Math.round(yrPct*100)+'% through '+now.getFullYear();
+
+  document.getElementById('proj-subtitle').textContent='Projections based on actual pace to date · '+pctLabel;
+
+  const grid=document.getElementById('proj-grid');
+  grid.innerHTML=`
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed">
+        <colgroup>
+          <col style="width:22%">
+          <col style="width:26%">
+          <col style="width:26%">
+          <col style="width:26%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th style="padding:0 0 10px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text2);border-bottom:1px solid var(--border)"></th>
+            <th style="padding:0 8px 10px;text-align:right;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--green);border-bottom:1px solid var(--border)">Est. revenue</th>
+            <th style="padding:0 8px 10px;text-align:right;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--blue);border-bottom:1px solid var(--border)">Tox samples</th>
+            <th style="padding:0 0 10px 8px;text-align:right;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--purple);border-bottom:1px solid var(--border)">Mol samples</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:14px 0;border-bottom:1px solid var(--border)">
+              <div style="font-size:12px;font-weight:600;color:var(--text)">This month</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px">${pctLabel}</div>
+            </td>
+            <td style="padding:14px 8px;text-align:right;border-bottom:1px solid var(--border)">
+              <div style="font-size:20px;font-weight:600;color:var(--green);font-variant-numeric:tabular-nums">${fmtRevFull(projMonthRev)}</div>
+              ${hasMtd?`<div style="font-size:10px;color:var(--text3);margin-top:2px">actual so far: ${fmtRevFull(calcRev(mtdTox,mtdMol))}</div>`:''}
+            </td>
+            <td style="padding:14px 8px;text-align:right;border-bottom:1px solid var(--border)">
+              <div style="font-size:20px;font-weight:600;color:var(--blue);font-variant-numeric:tabular-nums">${projMonthTox.toLocaleString()}</div>
+              ${hasMtd?`<div style="font-size:10px;color:var(--text3);margin-top:2px">actual so far: ${mtdTox.toLocaleString()}</div>`:''}
+            </td>
+            <td style="padding:14px 0 14px 8px;text-align:right;border-bottom:1px solid var(--border)">
+              <div style="font-size:20px;font-weight:600;color:var(--purple);font-variant-numeric:tabular-nums">${projMonthMol.toLocaleString()}</div>
+              ${hasMtd?`<div style="font-size:10px;color:var(--text3);margin-top:2px">actual so far: ${mtdMol.toLocaleString()}</div>`:''}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:14px 0;border-bottom:1px solid var(--border)">
+              <div style="font-size:12px;font-weight:600;color:var(--text)">${qNames[curQ]} ${now.getFullYear()}</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px">${qLabel}</div>
+            </td>
+            <td style="padding:14px 8px;text-align:right;border-bottom:1px solid var(--border)">
+              <div style="font-size:20px;font-weight:600;color:var(--green);font-variant-numeric:tabular-nums">${fmtRevFull(projQRev)}</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px">actual so far: ${fmtRevFull(calcRev(qtdTox,qtdMol))}</div>
+            </td>
+            <td style="padding:14px 8px;text-align:right;border-bottom:1px solid var(--border)">
+              <div style="font-size:20px;font-weight:600;color:var(--blue);font-variant-numeric:tabular-nums">${projQTox.toLocaleString()}</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px">actual so far: ${qtdTox.toLocaleString()}</div>
+            </td>
+            <td style="padding:14px 0 14px 8px;text-align:right;border-bottom:1px solid var(--border)">
+              <div style="font-size:20px;font-weight:600;color:var(--purple);font-variant-numeric:tabular-nums">${projQMol.toLocaleString()}</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px">actual so far: ${qtdMol.toLocaleString()}</div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:14px 0">
+              <div style="font-size:12px;font-weight:600;color:var(--text)">${now.getFullYear()} annual</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px">${yrLabel}</div>
+            </td>
+            <td style="padding:14px 8px;text-align:right">
+              <div style="font-size:20px;font-weight:600;color:var(--green);font-variant-numeric:tabular-nums">${fmtRevFull(projYrRev)}</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px">actual so far: ${fmtRevFull(calcRev(ytdTox,ytdMol))}</div>
+            </td>
+            <td style="padding:14px 8px;text-align:right">
+              <div style="font-size:20px;font-weight:600;color:var(--blue);font-variant-numeric:tabular-nums">${projYrTox.toLocaleString()}</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px">actual so far: ${ytdTox.toLocaleString()}</div>
+            </td>
+            <td style="padding:14px 0 14px 8px;text-align:right">
+              <div style="font-size:20px;font-weight:600;color:var(--purple);font-variant-numeric:tabular-nums">${projYrMol.toLocaleString()}</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px">actual so far: ${ytdMol.toLocaleString()}</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>`;
 }
+
 
 function dc(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 
