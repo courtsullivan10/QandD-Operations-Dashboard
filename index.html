@@ -217,8 +217,9 @@ table.dt tr.cr:hover { background: var(--bg3); }
     <div class="section-header">Collections</div>
     <div class="kpis">
       <div class="kpi"><div class="kpi-label" id="k0-lbl">Total collections</div><div class="kpi-value" id="k-total">—</div><div class="kpi-sub">samples</div></div>
-      <div class="kpi"><div class="kpi-label">Toxicology</div><div class="kpi-value" id="k-tox">—</div><div class="kpi-sub">samples</div></div>
-      <div class="kpi"><div class="kpi-label">Molecular</div><div class="kpi-value" id="k-mol">—</div><div class="kpi-sub">samples</div></div>
+      <div class="kpi"><div class="kpi-label">Toxicology</div><div class="kpi-value" id="k-tox">—</div><div class="kpi-sub" id="k-tox-pct">samples</div></div>
+      <div class="kpi"><div class="kpi-label">Molecular</div><div class="kpi-value" id="k-mol">—</div><div class="kpi-sub" id="k-mol-pct">samples</div></div>
+      <div class="kpi"><div class="kpi-label">Blood</div><div class="kpi-value" id="k-blood">—</div><div class="kpi-sub" id="k-blood-pct">samples</div></div>
       <div class="kpi"><div class="kpi-label">Active LSAs</div><div class="kpi-value" id="k-lsa">—</div><div class="kpi-sub">reps</div></div>
       <div class="kpi"><div class="kpi-label">Practices</div><div class="kpi-value" id="k-prac">—</div></div>
       <div class="kpi"><div class="kpi-label">Submission days</div><div class="kpi-value" id="k-days">—</div></div>
@@ -384,7 +385,7 @@ function setPracStatus(s, el) {
   populateSelects(); go();
 }
 
-function getVal(d) { return sType==='tox' ? d.tox : sType==='mol' ? d.mol : sType==='blood' ? d.blood : d.tox+d.mol+d.blood; }
+function getVal(d) { return sType==='tox' ? d.tox : sType==='mol' ? d.mol : sType==='blood' ? d.blood : d.tox+d.mol; }
 function typeLabel() { return sType==='tox' ? 'Toxicology' : sType==='mol' ? 'Molecular' : sType==='blood' ? 'Blood' : 'All collections'; }
 function setType(t, el) { sType = t; document.querySelectorAll('#type-pills .pill').forEach(x => x.classList.remove('active')); el.classList.add('active'); go(); }
 
@@ -432,13 +433,19 @@ function renderChips(lf, pf, lf2) {
 }
 
 function kpis(f) {
-  const totTox=f.reduce((s,d)=>s+d.tox,0), totMol=f.reduce((s,d)=>s+d.mol,0);
+  const totTox=f.reduce((s,d)=>s+d.tox,0), totMol=f.reduce((s,d)=>s+d.mol,0), totBlood=f.reduce((s,d)=>s+d.blood,0);
   const totRev=calcRev(totTox,totMol), days=new Set(f.map(d=>d.date)).size;
   const pracs=new Set(f.map(d=>d.practice)).size, lsas=new Set(f.map(d=>d.lsa)).size;
   document.getElementById('k0-lbl').textContent=typeLabel();
   document.getElementById('k-total').textContent=f.reduce((s,d)=>s+getVal(d),0).toLocaleString();
   document.getElementById('k-tox').textContent=totTox.toLocaleString();
   document.getElementById('k-mol').textContent=totMol.toLocaleString();
+  document.getElementById('k-blood').textContent=totBlood.toLocaleString();
+  const allSamples=totTox+totMol+totBlood;
+  const pctOf=n=>allSamples>0?(Math.round((n/allSamples)*1000)/10)+'% of total collections':'samples';
+  document.getElementById('k-tox-pct').textContent=pctOf(totTox);
+  document.getElementById('k-mol-pct').textContent=pctOf(totMol);
+  document.getElementById('k-blood-pct').textContent=pctOf(totBlood);
   document.getElementById('k-lsa').textContent=lsas;
   document.getElementById('k-prac').textContent=pracs;
   document.getElementById('k-days').textContent=days;
@@ -684,7 +691,7 @@ function lsaTable(f){
   const all=sType==='all';
   [['h-tox','tox'],['h-mol','mol'],['h-bld','blood']].forEach(([id,t])=>document.getElementById(id).style.display=all||sType===t?'':'none');
   document.querySelector('#t-lsa tbody').innerHTML=s.map(([n,v])=>{
-    const tot=all?v.tox+v.mol+v.blood:v[sType];
+    const tot=all?v.tox+v.mol:v[sType];
     return`<tr><td><strong>${n}</strong></td>${all||sType==='tox'?`<td>${v.tox}</td>`:''} ${all||sType==='mol'?`<td>${v.mol}</td>`:''} ${all||sType==='blood'?`<td>${v.blood}</td>`:''}<td><strong>${tot}</strong></td><td class="rev-cell">${fmtRevFull(calcRev(v.tox,v.mol))}</td><td><span class="badge badge-count">${v.n}</span></td></tr>`;
   }).join('');
 }
@@ -695,7 +702,7 @@ function pracTable(f){
   const all=sType==='all';
   [['ph-tox','tox'],['ph-mol','mol'],['ph-bld','blood']].forEach(([id,t])=>document.getElementById(id).style.display=all||sType===t?'':'none');
   document.querySelector('#t-prac tbody').innerHTML=s.map(([n,v])=>{
-    const tot=all?v.tox+v.mol+v.blood:v[sType];
+    const tot=all?v.tox+v.mol:v[sType];
     const safe=n.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     const sel=cPrac===n;
     return`<tr class="cr" style="${sel?'background:var(--bg3)':''}" onclick="cPrac=cPrac==='${safe}'?'':'${safe}';document.getElementById('prac-sel').value=cPrac;go()">
