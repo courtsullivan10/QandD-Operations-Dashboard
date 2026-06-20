@@ -353,8 +353,8 @@ function populateSelects() {
 function presetRange(p) {
   const now = new Date(), t = fmtISO(now);
   if (p === 'today') return { f: t, t: t };
-  if (p === 'week') { const dw = now.getDay(), m = new Date(now); m.setDate(now.getDate() - (dw===0?6:dw-1)); return { f: fmtISO(m), t: t ; }
-  if (p === 'month') return { f: `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`, t: t }; }
+  if (p === 'week') { const dw = now.getDay(), m = new Date(now); m.setDate(now.getDate() - (dw===0?6:dw-1)); return { f: fmtISO(m), t: t }; }
+  if (p === 'month') return { f: `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`, t: t };
   if (p === 'lastmonth') {
     const lmYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
     const lmMonth = now.getMonth() === 0 ? 12 : now.getMonth();
