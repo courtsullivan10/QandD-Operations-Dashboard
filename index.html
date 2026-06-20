@@ -216,7 +216,7 @@ table.dt tr.cr:hover { background: var(--bg3); }
 
     <div class="section-header">Collections</div>
     <div class="kpis">
-      <div class="kpi"><div class="kpi-label" id="k0-lbl">Total collections</div><div class="kpi-value" id="k-total">—</div><div class="kpi-sub">samples</div></div>
+      <div class="kpi"><div class="kpi-label" id="k0-lbl">Total collections</div><div class="kpi-value" id="k-total">—</div><div class="kpi-sub" id="k-total-sub">samples</div></div>
       <div class="kpi"><div class="kpi-label">Toxicology</div><div class="kpi-value" id="k-tox">—</div><div class="kpi-sub" id="k-tox-pct">samples</div></div>
       <div class="kpi"><div class="kpi-label">Molecular</div><div class="kpi-value" id="k-mol">—</div><div class="kpi-sub" id="k-mol-pct">samples</div></div>
       <div class="kpi"><div class="kpi-label">Blood</div><div class="kpi-value" id="k-blood">—</div><div class="kpi-sub" id="k-blood-pct">samples</div></div>
@@ -354,7 +354,7 @@ function presetRange(p) {
   const now = new Date(), t = fmtISO(now);
   if (p === 'today') return { f: t, t: t };
   if (p === 'week') { const dw = now.getDay(), m = new Date(now); m.setDate(now.getDate() - (dw===0?6:dw-1)); return { f: fmtISO(m), t: t }; }
-  if (p === 'month') return { f: `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`, t: t };
+  if (p === 'month') return { f: `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`, t: t }; }
   if (p === 'lastmonth') {
     const lmYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
     const lmMonth = now.getMonth() === 0 ? 12 : now.getMonth();
@@ -438,6 +438,7 @@ function kpis(f) {
   const pracs=new Set(f.map(d=>d.practice)).size, lsas=new Set(f.map(d=>d.lsa)).size;
   document.getElementById('k0-lbl').textContent=typeLabel();
   document.getElementById('k-total').textContent=f.reduce((s,d)=>s+getVal(d),0).toLocaleString();
+  document.getElementById('k-total-sub').textContent=sType==='all'?'samples (excluding blood)':'samples';
   document.getElementById('k-tox').textContent=totTox.toLocaleString();
   document.getElementById('k-mol').textContent=totMol.toLocaleString();
   document.getElementById('k-blood').textContent=totBlood.toLocaleString();
